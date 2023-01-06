@@ -13,4 +13,4 @@
 | :---- |:---- | :--- |
 | 深入浅出gRPC|文章| [深入浅出gRPC](https://github.com/taoonehacker/MayBeNotToday/tree/main/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%E5%AE%9E%E6%88%98)|
 | 高性能MySQL实战|视频| [高性能MySQL实战](https://github.com/taoonehacker/MayBeNotToday/tree/main/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%E5%AE%9E%E6%88%98)|
-|Netty核心原理剖析与RPC实践|[Netty核心原理剖析与RPC实践](https://github.com/taoonehacker/MayBeNotToday/tree/main/Netty%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8ERPC%E5%AE%9E%E8%B7%B5)|
+|Netty核心原理剖析与RPC实践|视频|[Netty核心原理剖析与RPC实践](https://github.com/taoonehacker/MayBeNotToday/tree/main/Netty%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8ERPC%E5%AE%9E%E8%B7%B5)|
