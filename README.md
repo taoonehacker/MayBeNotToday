@@ -6,6 +6,8 @@
 | 名称      | 描述 |
 | :---- | :--- |
 | 剑指Offer第二版      | [剑指Offer第二版](https://github.com/taoonehacker/MayBeNotToday/tree/main/E-Book/%E5%89%91%E6%8C%87Offer%E7%AC%AC%E4%BA%8C%E7%89%88) |
+| 深入理解计算机系统      | [深入理解计算机系统](https://github.com/taoonehacker/MayBeNotToday/tree/main/E-Book/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F) |
+
 
 
 ### 网课
