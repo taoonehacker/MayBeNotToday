@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>1基础：深入 RPC 交互流程.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 14px;
+	padding: 0 12px;
+	line-height: 22px;
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	color: #4080D0;
+	text-decoration: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+	font-size: inherit;
+	line-height: auto;
+}
+
+a:hover {
+	color: #4080D0;
+	text-decoration: underline;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left: 5px solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 14px;
+	line-height: 19px;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+.mac code {
+	font-size: 12px;
+	line-height: 18px;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+/** Theming */
+
+.vscode-light,
+.vscode-light pre code {
+	color: rgb(30, 30, 30);
+}
+
+.vscode-dark,
+.vscode-dark pre code {
+	color: #DDD;
+}
+
+.vscode-high-contrast,
+.vscode-high-contrast pre code {
+	color: white;
+}
+
+.vscode-light code {
+	color: #A31515;
+}
+
+.vscode-dark code {
+	color: #D7BA7D;
+}
+
+.vscode-light pre:not(.hljs),
+.vscode-light code > div {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre:not(.hljs),
+.vscode-dark code > div {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre:not(.hljs),
+.vscode-high-contrast code > div {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vscode-light blockquote,
+.vscode-dark blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.vscode-high-contrast blockquote {
+	background: transparent;
+	border-color: #fff;
+}
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family:  "Meiryo", "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+</head>
+<body>
+<h1 id="%E5%9F%BA%E7%A1%80%E7%AF%87%EF%BC%9A%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3-rpc-%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B">基础篇：深入理解 RPC 交互流程</h1>
+<p><strong>资源由 我爱学it(www.52studyit.com) 收集并免费发布</strong></p>
+<p>本节我们开始讲解 RPC 的消息交互流程，目的是搞清楚一个简单的 RPC 方法调用背后究竟发生了怎样复杂曲折的故事，以看透 RPC 的本质。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/6/5/163cf789da84cb53?w=869&amp;h=133&amp;f=png&amp;s=9766" alt=""></p>
+<p>上图是信息系统交互模型宏观示意图，RPC 的消息交互则会深入到底层。</p>
+<p>RPC 是两个子系统之间进行的直接消息交互，它使用操作系统提供的套接字来作为消息的载体，以特定的消息格式来定义消息内容和边界。</p>
+<p>RPC 的客户端通过文件描述符的读写 API (read &amp; write) 来访问操作系统内核中的网络模块为当前套接字分配的发送 (send buffer) 和接收 (recv buffer) 缓存。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/5/31/163b4dcf06e0a780?w=865&amp;h=471&amp;f=png&amp;s=40786" alt=""></p>
+<p>如上图所示，左边的客户端进程写 RPC 指令消息到内核的发送缓存中，内核将发送缓存中的数据传送到物理硬件 NIC，也就是网络接口芯片 (Network Interface Circuit)。NIC 负责将翻译出来的模拟信号通过网络硬件传递到服务器硬件的 NIC。服务器的 NIC 再将模拟信号转成字节数据存放到内核为套接字分配的接收缓存中，最终服务器进程从接收缓存中读取数据即为源客户端进程传递过来的 RPC 指令消息。</p>
+<p>消息从用户进程流向物理硬件，又从物理硬件流向用户进程，中间还经过了一系列的路由网关节点。</p>
+<p>上图呈现的只是 RPC 一次消息交互的上半场，下半场是一个逆向的过程，从服务器进程向客户端进程返回响应数据。完整的一次 RPC 过程如下图所示：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/10/17/166802bd272e86a2?w=811&amp;h=432&amp;f=png&amp;s=50907" alt=""></p>
+<p>下面用 Python 代码来描述上述过程。</p>
+<ul>
+<li>Server 端死循环监听本地 8080 端口，等待客户端的连接。</li>
+<li>客户端启动时连接本地 8080 端口，紧接着发送词一个字符串 hello，然后等待服务器响应。</li>
+<li>服务器接收到客户端连接后立即收取客户端发送过来的字符串，也就是 hello，打印出来。然后立即给对方回复一个字符串 world。</li>
+<li>客户端接收到服务器发送过来的 world，马上打印出来。</li>
+<li>关闭连接，结束。</li>
+</ul>
+<pre class="hljs"><code><div># coding: utf-8
+# server
+
+import socket
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.bind((&quot;localhost&quot;, 8080))
+sock.listen(1)  # 监听客户端连接
+while True:
+    conn, addr = sock.accept()  # 接收一个客户端连接
+    print conn.recv(1024)  # 从接收缓冲读消息 recv buffer
+    conn.sendall(&quot;world&quot;)  # 将响应发送到发送缓冲 send buffer
+    conn.close() # 关闭连接
+
+# coding: utf-8
+# client
+
+import socket
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect((&quot;localhost&quot;, 8080))  # 连接服务器
+sock.sendall(&quot;hello&quot;)  # 将消息输出到发送缓冲 send buffer
+print sock.recv(1024)  # 从接收缓冲 recv buffer 中读响应
+sock.close() # 关闭套接字
+
+</div></code></pre>
+<p>如果从上面代码上观察，我们其实很难看出上图所示的复杂过程。浮现在多数人脑海中往往是下面的这幅简约模型图。相比之下它要简单很多，这也正是操作系统设计的魅力所在，让你时时刻刻都在使用它却感受不到它的存在。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/5/31/163b4e36daa5cc79?w=533&amp;h=187&amp;f=png&amp;s=14580" alt=""></p>
+<h2 id="%E5%B0%8F%E7%BB%93">小结</h2>
+<p>通过本节内容，读者们对 RPC 的交互流程应该有了大致了解，但是还并不知道 RPC 之间到底交互了什么。就好比你能看到远方有几个人在说话，但是不知道他们在说啥。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/5/19/163760c75f77399c?w=150&amp;h=150&amp;f=jpeg&amp;s=6950" alt=""></p>
+<p>下一节我们将放大细节，仔细观察 RPC 客户端服务器之间窃窃私语了什么，它们究竟是在用什么外星语言交流。</p>
+<h2 id="%E7%BB%83%E4%B9%A0%E9%A2%98">练习题</h2>
+<p>一个很有趣的小测试实验 , 请读者编写代码实现以下情景:</p>
+<blockquote>
+<p>客户端疯狂发送请求，但是服务器不读不处理，会发生什么？</p>
+</blockquote>
+
+</body>
+</html>
